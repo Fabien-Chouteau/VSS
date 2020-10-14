@@ -65,6 +65,26 @@ package body VSS.String_Vectors is
       end if;
    end Element;
 
+   -------------
+   -- Element --
+   -------------
+
+   function Element
+     (Self     : Virtual_String_Vector'Class;
+      Position : Cursor) return VSS.Strings.Virtual_String is
+   begin
+      return Self.Element (Position.Index);
+   end Element;
+
+   -----------
+   -- First --
+   -----------
+
+   overriding function First (Self : Reversible_Iterator) return Cursor is
+   begin
+      return (Index => 1, Last => Self.Last);
+   end First;
+
    --------------
    -- Finalize --
    --------------
@@ -74,6 +94,25 @@ package body VSS.String_Vectors is
       VSS.Implementation.String_Vectors.Unreference (Self.Data);
    end Finalize;
 
+   -------------
+   -- Iterate --
+   -------------
+
+   function Iterate
+     (Self : Virtual_String_Vector'Class) return Reversible_Iterator is
+   begin
+      return (Last => Self.Length);
+   end Iterate;
+
+   ----------
+   -- Last --
+   ----------
+
+   overriding function Last (Self : Reversible_Iterator) return Cursor is
+   begin
+      return (Self.Last, Self.Last);
+   end Last;
+
    ------------
    -- Length --
    ------------
@@ -82,6 +121,32 @@ package body VSS.String_Vectors is
    begin
       return (if Self.Data = null then 0 else Self.Data.Last);
    end Length;
+
+   ----------
+   -- Next --
+   ----------
+
+   overriding function Next
+     (Self     : Reversible_Iterator;
+      Position : Cursor) return Cursor is
+   begin
+      return (if Has_Element (Position)
+              then (Position.Index + 1, Position.Last)
+              else Position);
+   end Next;
+
+   --------------
+   -- Previous --
+   --------------
+
+   overriding function Previous
+     (Self     : Reversible_Iterator;
+      Position : Cursor) return Cursor is
+   begin
+      return (if Has_Element (Position)
+              then (Position.Index - 1, Position.Last)
+              else Position);
+   end Previous;
 
    ----------
    -- Read --

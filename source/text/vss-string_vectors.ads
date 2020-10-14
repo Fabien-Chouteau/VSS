@@ -22,6 +22,8 @@
 ------------------------------------------------------------------------------
 --  Vector of strings and operations on it.
 
+with Ada.Iterator_Interfaces;
+
 private with Ada.Finalization;
 private with Ada.Streams;
 
@@ -35,7 +37,9 @@ package VSS.String_Vectors is
 
    type Virtual_String_Vector is tagged private
      with
-       Constant_Indexing => Element;
+       Constant_Indexing => Element,
+       Default_Iterator  => Iterate,
+       Iterator_Element  => VSS.Strings.Virtual_String;
 
    function Length (Self : Virtual_String_Vector'Class) return Natural;
    --  Number of elements in the vector.
@@ -49,6 +53,39 @@ package VSS.String_Vectors is
      (Self : in out Virtual_String_Vector'Class;
       Item : VSS.Strings.Virtual_String'Class);
    --  Append string to the end of the vector.
+
+   --  Syntax sugar for Ada 2012 user-defined iterator
+
+   type Cursor is private;
+
+   function Element
+     (Self     : Virtual_String_Vector'Class;
+      Position : Cursor) return VSS.Strings.Virtual_String;
+
+   function Has_Element (Self : Cursor) return Boolean
+     with Inline;
+
+   package Iterator_Interfaces is new Ada.Iterator_Interfaces
+     (Cursor, Has_Element);
+
+   type Reversible_Iterator is
+     limited new Iterator_Interfaces.Reversible_Iterator with private;
+
+   overriding function First (Self : Reversible_Iterator) return Cursor;
+
+   overriding function Next
+     (Self     : Reversible_Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Last (Self : Reversible_Iterator) return Cursor;
+
+   overriding function Previous
+     (Self     : Reversible_Iterator;
+      Position : Cursor) return Cursor;
+
+   function Iterate
+     (Self : Virtual_String_Vector'Class) return Reversible_Iterator;
+   --  Return an interator over each element in the vector
 
 private
 
@@ -67,5 +104,19 @@ private
 
    overriding procedure Adjust (Self : in out Virtual_String_Vector);
    overriding procedure Finalize (Self : in out Virtual_String_Vector);
+
+   type Reversible_Iterator is
+     limited new Iterator_Interfaces.Reversible_Iterator with
+   record
+      Last : Natural;
+   end record;
+
+   type Cursor is record
+      Index : Natural;
+      Last  : Natural;
+   end record;
+
+   function Has_Element (Self : Cursor) return Boolean is
+     (Self.Index in 1 .. Self.Last);
 
 end VSS.String_Vectors;
