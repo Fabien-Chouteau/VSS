@@ -5,9 +5,9 @@ all:
 	gprbuild -p -P gnat/gnatcoll_text.gpr -XVSS_BUILD_MODE=$(BUILD_MODE) -cargs $(ADAFLAGS)
 
 build_tests:
-	gprbuild -p -P gnat/vss_text_tests.gpr
-	gprbuild -p -P gnat/vss_json_tests.gpr
-	gprbuild -p -P gnat/gnatcoll_text_tests.gpr
+	gprbuild -p -P gnat/vss_text_tests.gpr -XVSS_BUILD_MODE=$(BUILD_MODE)
+	gprbuild -p -P gnat/vss_json_tests.gpr -XVSS_BUILD_MODE=$(BUILD_MODE)
+	gprbuild -p -P gnat/gnatcoll_text_tests.gpr -XVSS_BUILD_MODE=$(BUILD_MODE)
 
 check: build_tests check_text check_json
 
